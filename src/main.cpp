@@ -27,7 +27,7 @@ int main(){
         return 0;
     }
 
-    catch(std::runtime_error e){
+    catch(std::runtime_error& e){
         std::cout << "Unrecoverable error, exiting: " << e.what() << std::endl;
         return 1;
     }

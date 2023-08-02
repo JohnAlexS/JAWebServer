@@ -1,12 +1,8 @@
-#include <ServerManager.h>
-#include <unistd.h>
-#include <chrono>
-#include <error.h>
-#include <string.h>
+#include "ServerManager.h"
+#include "Html.h"
+#include "BetterSockets.h"
 
 ServerManager::ServerManager() : server_socket(socket(AF_INET, SOCK_STREAM, 0)), stop(new std::atomic<bool>(false)), server_address(), clients(), mtx(){
-    bool err = true;
-
     if(server_socket < 0){
         throw std::runtime_error("Unable to retrieve socket");
     }
@@ -15,20 +11,14 @@ ServerManager::ServerManager() : server_socket(socket(AF_INET, SOCK_STREAM, 0)),
     server_address.sin_addr.s_addr = INADDR_ANY;
     server_address.sin_port = htons(HOST_PORT);
 
-    try{utils::setNoBlock(server_socket);}
-    catch(std::runtime_error e){
+    try{
+        bsock::setNoBlock(server_socket);
+    }
+    catch(std::runtime_error& e){
         throw std::runtime_error(e);
     }
 
-    while(err){
-        if(bind(server_socket, (const sockaddr *) &server_address, sizeof(server_address)) == 0){
-            err = false;
-        }
-        else{
-            std::cout << "Failed to bind socket, retrying in 10 seconds...\n";
-            std::this_thread::sleep_for(std::chrono::seconds(10));
-        }
-    }
+    bsock::persistBind(server_socket, server_address);
 
     if(listen(server_socket, MAX_CLIENTS) < 0){
         throw std::runtime_error("Unable to begin listening on socket");
@@ -49,7 +39,7 @@ void ServerManager::client_listener(){
         }
 
         else{
-            std::thread t([&, client_socket](){                
+            std::thread t([&, client_socket](){
                 clientHandler(client_socket, stop);
             });
 
@@ -59,8 +49,7 @@ void ServerManager::client_listener(){
 }
 
 void ServerManager::clientHandler(int const &client_socket, std::atomic<bool>* s){
-
-    if(utils::handleHTMLReq(client_socket) == 0){
+    if(html::handleHTMLReq(client_socket) == 0){
         ClientManager* client = new ClientManager(client_socket, s);
 
         mtx.lock();

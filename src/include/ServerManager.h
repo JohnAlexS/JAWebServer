@@ -17,8 +17,8 @@ class ServerManager{
     private:
         void clientHandler(int const &client_socket, std::atomic<bool>* s);
         int server_socket;
+        std::atomic<bool>* stop;
         struct sockaddr_in server_address;
         std::vector<ClientManager*> clients;
-        std::atomic<bool>* stop;
         std::mutex mtx;
 };

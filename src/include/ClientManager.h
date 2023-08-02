@@ -8,12 +8,6 @@
 #include <future>
 #include <Utils.h>
 
-enum UserPrivilege{
-    admin,
-    standard_user,
-    guest_user
-};
-
 struct ClientAddress{
     std::string ip = "0.0.0.0";
     int port = -1;
@@ -21,10 +15,8 @@ struct ClientAddress{
 
 class ClientManager{
     private:
-        UserPrivilege privilege;
-        ClientAddress client_address;
         int socketFD;
-        int c = 0;
+        ClientAddress client_address;
         std::atomic<bool>* stop;
 
 
