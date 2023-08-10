@@ -24,6 +24,7 @@ std::string bsock::readSocket(int const &socketFD, int size){
             delete[] buf;
             throw std::runtime_error("Failed to read buffer");
         }
+        delete[] buf;
         throw errno;
     }
 
@@ -33,9 +34,31 @@ std::string bsock::readSocket(int const &socketFD, int size){
     return data;
 }
 
-void bsock::sendToSocket(int const &socketFD, std::string& str){
-    if(send(socketFD, str.c_str(), str.length(), MSG_NOSIGNAL) < 0){
-        throw std::runtime_error("Failed to send to client");
+void bsock::sendToSocket(int const &socketFD, std::string str){
+    int bytesToSend;
+    int sent;
+    size_t bytesSent = 0;
+    fd_set set;
+    struct timeval timeout;
+    
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+
+    FD_ZERO(&set);
+    FD_SET(socketFD, &set);
+
+    while(bytesSent < str.length()){
+        if(select(socketFD + 1, NULL, &set, NULL, &timeout) != 0){ 
+            bytesToSend = std::min(static_cast<int>(str.length() - bytesSent), SEND_RATE);
+            sent = send(socketFD, str.data() + bytesSent, bytesToSend, MSG_NOSIGNAL);
+
+            if(sent < 0){
+                std::cout << errno << std::endl;
+                continue;
+            }
+
+            bytesSent += sent;
+        }
     }
 }
 

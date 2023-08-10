@@ -49,6 +49,16 @@ void ServerManager::client_listener(){
 }
 
 void ServerManager::clientHandler(int const &client_socket, std::atomic<bool>* s){
+    struct sockaddr_in address = {0};
+    socklen_t addressLength = sizeof(address);
+
+    if(getpeername(client_socket , (struct sockaddr*) &address , &addressLength ) < 0){
+        throw std::runtime_error("Could not get clients information");
+    }
+
+    std::cout << "Connection from: " << inet_ntoa(address.sin_addr) << " on port: " << ntohs(address.sin_port) << std::endl;
+
+
     if(html::handleHTMLReq(client_socket) == 0){
         ClientManager* client = new ClientManager(client_socket, s);
 
