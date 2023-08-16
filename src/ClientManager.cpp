@@ -18,8 +18,12 @@ ClientManager::ClientManager(int socketFD, std::atomic<bool>* stop) : socketFD(s
 }
 
 void ClientManager::clientMain(){
-    while(!stop->load(std::memory_order_acquire)){
-        html::handleHTMLReq(socketFD);
+    utils::Timer elapsedTime;
+
+    while((!stop->load(std::memory_order_acquire)) && elapsedTime.getElapsedTimeSeconds() < 360){
+        if(html::handleHTMLReq(socketFD) == 0){
+            elapsedTime.reset();
+        }
     }
 
     std::cout << "stopping" << std::endl;

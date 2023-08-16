@@ -67,6 +67,12 @@ void ServerManager::clientHandler(int const &client_socket, std::atomic<bool>* s
         mtx.unlock();
 
         client->clientMain();
+
+        mtx.lock();
+        clients.erase(std::remove(clients.begin(), clients.end(), client));
+        mtx.unlock();
+
+        delete client;
     }
 
     else {
@@ -80,10 +86,6 @@ void ServerManager::shutdown(){
 }
 
 ServerManager::~ServerManager(){
-    for(long unsigned int i = 0; i < clients.size(); i++){
-        delete clients.at(i);
-    }
-
     delete stop;
 
     std::cout << "clients deleted\n";

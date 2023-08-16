@@ -3,6 +3,7 @@
 #include <ClientManager.h>
 #include <assert.h>
 #include <future>
+#include <algorithm>
 
 #define MAX_CLIENTS 5
 #define HOST_PORT 8080

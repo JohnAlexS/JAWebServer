@@ -10,24 +10,26 @@ namespace utils
 
     class Timer{
         public: 
-            Timer(std::string name) : name(name){
-                m_Start = std::chrono::high_resolution_clock::now();
+            Timer(){
+                reset();
             }
 
-            ~Timer(){
+            int getElapsedTimeSeconds(){
                 auto endpointTime = std::chrono::high_resolution_clock::now();
 
-                auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_Start).time_since_epoch().count();
-                auto stop = std::chrono::time_point_cast<std::chrono::microseconds>(endpointTime).time_since_epoch().count();
+                auto start = std::chrono::time_point_cast<std::chrono::seconds>(m_Start).time_since_epoch().count();
+                auto stop = std::chrono::time_point_cast<std::chrono::seconds>(endpointTime).time_since_epoch().count();
 
-                auto duration  = stop-start;
-                double ms = duration*0.001;
-
-                std::cout << "Timer " << name << " took " << ms << " milliseconds to execute.";
+                return stop-start;
             }
+
+            void reset(){
+                 m_Start = std::chrono::high_resolution_clock::now();
+            }
+
+            ~Timer(){}
         
         private:
-            std::string name;
             std::chrono::time_point<std::chrono::high_resolution_clock> m_Start;
     };
 } 
